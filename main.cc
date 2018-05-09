@@ -228,7 +228,7 @@ int main(int argc, char *argv[]) {
     }
 
 
-    fstream f(filename + ".c", fstream::out);
+    fstream f("sp_" + filename + ".c", fstream::out);
 
 
     // header
@@ -236,14 +236,6 @@ int main(int argc, char *argv[]) {
 
     f << endl;
 
-
-    // preview
-    if (preview) {
-        f << "#if 0	/* Image preview */" << endl;
-        displayPreview(image, width, height, f);
-        f << "#endif" << endl;
-        f << endl;
-    }
 
     // split it into texels
     // use 32x32 for now
@@ -257,6 +249,26 @@ int main(int argc, char *argv[]) {
 
     int boxX = 0;
     int boxY = 0;
+    
+    f << "#define " << filename << "IMAGEH\t" << texelW * splitWidth << endl;
+    f << "#define " << filename << "IMAGEW\t" << texelH * splitHeight << endl;
+    f << "#define " << filename << "BLOCKSIZEW\t" << texelW << endl;
+    f << "#define " << filename << "BLOCKSIZEH\t" << texelH << endl;
+    f << "#define " << filename << "SCALEX\t" << scaleX << endl;
+    f << "#define " << filename << "SCALEY\t" << scaleY << endl;
+    //f << "#define " << filename << "ALPHABIT\t" << "255" << endl;
+    f << "#define " << filename << "MODE\t" << "SP_Z | SP_OVERLAP | SP_TRANSPARENT" << endl;
+    f << endl;
+    
+    
+    // preview output
+    if (preview) {
+        f << "#if 0	/* Image preview */" << endl;
+        displayPreview(image, width, height, f);
+        f << "#endif" << endl;
+        f << endl;
+    }
+    
 
     for (int i = 0; i < totalBoxes; i++) {
         //cout << "boxes: " << i << endl;
@@ -346,17 +358,17 @@ int main(int argc, char *argv[]) {
 
     f << "Sprite " << filename << "_sprite = {" << endl;
     f << "\t" << "0, 0, /* Position: x,y */" << endl;
-    f << "\t" << texelW * splitWidth << ", " << texelH * splitHeight << ", /* Sprite size in texels (x,y) */" << endl;
-    f << "\t" << scaleX << ", " << scaleY << ", /* Sprite Scale: x,y */" << endl;
+    f << "\t" << filename << "IMAGEW" << ", " << filename << "IMAGEH" << ", /* Sprite size in texels (x,y) */" << endl;
+    f << "\t" << filename << "SCALEX" << ", " << filename << "SCALEY" << ", /* Sprite Scale: x,y */" << endl;
     f << "\t" << "0, 0, /* Sprite Explosion Spacing: x,y */" << endl;
-    f << "\t" << "SP_Z | SP_OVERLAP | SP_TRANSPARENT, /* Sprite Attributes */" << endl;
+    f << "\t" << filename << "MODE" << ", /* Sprite Attributes */" << endl;
     f << "\t" << "0x1234, /* Sprite Depth: Z */" << endl;
     f << "\t" << "255, 255, 255, 255, /* Sprite Coloration: RGBA */" << endl;
     f << "\t" << "0, 0, NULL, /* Color LookUp Table: start_index, length, address */" << endl;
     f << "\t" << "0, 1, /* Sprite Bitmap index: start index, step increment */" << endl;
     f << "\t" << "NUM_" << filename << "_BMS, /* Number of bitmaps */" << endl;
     f << "\t" << "NUM_DL(" << "NUM_" << filename << "_BMS), /* Number of display list locations allocated */" << endl;
-    f << "\t" << texelW << ", " << texelH << ", /* Sprite Bitmap Height: Used_height, physical height */" << endl;
+    f << "\t" << filename << "BLOCKSIZEH" << ", " << filename << "BLOCKSIZEH" << ", /* Sprite Bitmap Height: Used_height, physical height */" << endl;
     f << "\t" << "G_IM_FMT_RGBA, /* Sprite Bitmap Format */" << endl;
     f << "\t" << "G_IM_SIZ_" << mode << "b, /* Sprite Bitmap Texel Size */" << endl;
     f << "\t" << filename << "_bitmaps, /* Pointer to bitmaps */" << endl;
@@ -370,6 +382,54 @@ int main(int argc, char *argv[]) {
 
     return 0;
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
