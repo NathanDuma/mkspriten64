@@ -21,3 +21,6 @@ Preview is false by default.
 Colour mode: -m 16/32
 
 Colour mode is 16-bit RGBA by default
+
+
+Please note that if you run multiple instances of mkspriten64 at once, it would be wise to have a delay between runs since they will all try to write to the same file, common_sprites.h. This file just makes it convienent to include all sprites in one file and so this is optional.
