@@ -228,17 +228,36 @@ int main(int argc, char *argv[]) {
     }
 
 
+
+
+    fstream f2("sp_" + filename + ".h", fstream::out);
     fstream f("sp_" + filename + ".c", fstream::out);
 
 
-    // header
-    f << "#include <PR/sp.h>" << endl;
+    // have all of them included in 1 h file
+    // this isn't thread safe so you gotta get lucky
+    // otherwise you can sleep 
+    ofstream common("common_sprites.h", std::ios_base::app);
 
+    common << "#include \"" << "sp_" << filename << ".h\"" << endl;
+
+    common.close();
+
+    f << "#include \"" << "sp_" + filename + ".h\"" << endl;
     f << endl;
+
+    // header
+    f2 << "#ifndef " << "sp_" << filename << "_h" << endl;
+    f2 << "#define " << "sp_" << filename << "_h" << endl;
+    f2 << endl;
+    f2 << "#include <PR/sp.h>" << endl;
+
+    f2 << endl;
+
 
 
     // split it into texels
-    // use 32x32 for now
+    // use 32x32
     int texelH = 32;
     int texelW = 32;
 
@@ -247,38 +266,52 @@ int main(int argc, char *argv[]) {
 
     int totalBoxes = splitWidth*splitHeight;
 
+
     int boxX = 0;
     int boxY = 0;
-    
-    f << "#define " << filename << "IMAGEH\t" << texelW * splitWidth << endl;
-    f << "#define " << filename << "IMAGEW\t" << texelH * splitHeight << endl;
-    f << "#define " << filename << "BLOCKSIZEW\t" << texelW << endl;
-    f << "#define " << filename << "BLOCKSIZEH\t" << texelH << endl;
-    f << "#define " << filename << "SCALEX\t" << scaleX << endl;
-    f << "#define " << filename << "SCALEY\t" << scaleY << endl;
+
+    f2 << "#define " << filename << "TRUEIMAGEH\t" << height << endl;
+    f2 << "#define " << filename << "TRUEIMAGEW\t" << width << endl;
+    f2 << "#define " << filename << "IMAGEH\t" << texelH * splitHeight << endl;
+    f2 << "#define " << filename << "IMAGEW\t" << texelW * splitWidth << endl;
+    f2 << "#define " << filename << "BLOCKSIZEW\t" << texelW << endl;
+    f2 << "#define " << filename << "BLOCKSIZEH\t" << texelH << endl;
+    f2 << "#define " << filename << "SCALEX\t" << scaleX << endl;
+    f2 << "#define " << filename << "SCALEY\t" << scaleY << endl;
     //f << "#define " << filename << "ALPHABIT\t" << "255" << endl;
-    f << "#define " << filename << "MODE\t" << "SP_Z | SP_OVERLAP | SP_TRANSPARENT" << endl;
-    f << endl;
-    
-    
+    f2 << "#define " << filename << "MODE\t" << "SP_Z | SP_OVERLAP | SP_TRANSPARENT" << endl;
+    f2 << endl;
+
+
+    f2 << "// extern varaibles " << endl;
+    f2 << "extern Bitmap " << filename << "_bitmaps[];" << endl;
+    f2 << "extern Gfx " << filename << "_dl[];" << endl;
+    f2 << endl;
+    f2 << "#define NUM_" << filename << "_BMS  (sizeof(" << filename << "_bitmaps" << ")/sizeof(Bitmap))" << endl;
+    f2 << endl;
+    f2 << "extern Sprite " << filename << "_sprite;" << endl;
+    f2 << endl;
+
+    f2 << "#endif " << endl;
+    f2 << endl;
+
     // preview output
     if (preview) {
-        f << "#if 0	/* Image preview */" << endl;
-        displayPreview(image, width, height, f);
-        f << "#endif" << endl;
-        f << endl;
+        f2 << "#if 0	/* Image preview */" << endl;
+        displayPreview(image, width, height, f2);
+        f2 << "#endif" << endl;
+        f2 << endl;
     }
-    
 
     for (int i = 0; i < totalBoxes; i++) {
         //cout << "boxes: " << i << endl;
 
         vector<vector < string>> texel;
 
-        texel.resize(texelH);
+        texel.resize(texelW);
 
         for (auto &it : texel) {
-            it.resize(texelW);
+            it.resize(texelH);
         }
 
         row = 0;
@@ -327,7 +360,7 @@ int main(int argc, char *argv[]) {
 
         boxY++;
 
-        if (boxY == splitHeight) {
+        if (boxY == splitWidth) {
             boxX++;
             boxY = 0;
         }
@@ -335,25 +368,21 @@ int main(int argc, char *argv[]) {
 
     f << endl << endl;
 
-    f << "static Bitmap " << filename << "_bitmaps[] = {" << endl;
+
+    f << "Bitmap " << filename << "_bitmaps[] = {" << endl;
     for (int i = 0; i < totalBoxes; i++) {
         f << "\t";
-        f << "{" << texelW << ", " << texelW << ", 0, 0, " << filename
-                << i << "_sp, " << texelH << ", 0},";
+        f << "{" << filename << "BLOCKSIZEW" << ", " 
+                << filename << "BLOCKSIZEW" << ", 0, 0, " 
+                << filename << i << "_sp, " 
+                << filename << "BLOCKSIZEH" << ", 0},";
         f << endl;
     }
 
     f << "};" << endl;
     f << endl;
 
-    f << "#define NUM_" << filename << "_BMS  (sizeof(" << filename << "_bitmaps" << ")/sizeof(Bitmap))" << endl;
-    f << endl;
-
-    f << "static Gfx " << filename << "_dl[NUM_DL(NUM_" << filename << "_BMS)];" << endl;
-    f << endl;
-
-
-    f << "extern Sprite " << filename << "_sprite;" << endl;
+    f << "Gfx " << filename << "_dl[NUM_DL(NUM_" << filename << "_BMS)];" << endl;
     f << endl;
 
     f << "Sprite " << filename << "_sprite = {" << endl;
@@ -378,10 +407,160 @@ int main(int argc, char *argv[]) {
 
     f << endl;
 
+
     f.close();
 
     return 0;
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
