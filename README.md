@@ -17,3 +17,7 @@ Scale is 1.0 by default.
 Show preview in c file: -p t/f
 
 Preview is false by default.
+
+Colour mode: -m 16/32
+
+Colour mode is 16-bit RGBA by default
