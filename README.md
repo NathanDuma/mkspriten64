@@ -1,6 +1,6 @@
 # mksprite64
 
-Windows equivalent so the SGI program mksprite for the Nintendo 64. Converts png to a c source file.
+Windows equivalent so the SGI program mksprite for the Nintendo 64. Converts png to a h header and c source file.
 
 Usage:
 Specify file path (must end in .png): -f file.png
